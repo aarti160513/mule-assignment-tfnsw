@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<sub-flow name="fecth-role-information" doc:id="e32800c6-8d32-470a-9986-9188d20ce7ac" >
+		<set-variable value="#[attributes.headers.client_id]" doc:name="ClientId" doc:id="cd3070b3-238a-485b-a677-18dac075f58c" variableName="clientId"/>
+		<set-variable value="#[attributes.headers.client_secret]" doc:name="Client Secret" doc:id="bddbbae8-ed62-44b0-8f88-36c14620ae19" variableName="clientSecret" />
+		<os:contains doc:name="Contains" doc:id="72448da7-872d-4f6f-8ba5-f2e159047c6f" key="#[vars.clientId]" objectStore="Object_store"/>
+		<choice doc:name="Choice" doc:id="3f127637-03ec-44e0-95f2-a73a3895920c">
+			<when expression="#[payload == true]">
+				<os:retrieve doc:name="Retrieve" doc:id="af5ac915-3ca0-42b7-983e-0bd39a7c827e" key="#[vars.clientId]" objectStore="Object_store"/>
+				<set-variable value="#[payload.role]" doc:name="Role" doc:id="56891d89-1435-4180-afe3-26a388449564" variableName="role"/>
+			</when>
+			<otherwise >
+				<db:query-single doc:name="Query Role Information for Client" doc:id="181b23ef-dd3c-4a46-9476-b7b732721c8b" config-ref="Database_Config">
+					<db:sql ><![CDATA[SELECT role 
+FROM role
+WHERE ClientID = :clientId]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	clientId: vars.clientId
+}]]]></db:input-parameters>
+				</db:query-single>
+				<choice doc:name="Choice" doc:id="e9b841e1-4871-42ed-92f1-f6b90f05ad8c" >
+					<when expression="#[sizeOf(payload) &gt; 0]">
+						<os:store doc:name="Store" doc:id="4cba7591-fd7a-45e0-bde2-6ec0114e9eb4" key="#[vars.clientId]" objectStore="Object_store" />
+					</when>
+					<otherwise >
+						<os:store doc:name="Store" doc:id="9650b918-4fdc-469e-a8d0-e1c826b3676c" key="#[vars.clientId]" objectStore="Object_store" >
+							<os:value ><![CDATA[#["UNKNOWN"]]]></os:value>
+						</os:store>
+					</otherwise>
+				</choice>
+			</otherwise>
+		</choice>
+	</sub-flow>
+</mule>

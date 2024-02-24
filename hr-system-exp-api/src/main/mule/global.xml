@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<os:config name="ObjectStore_Config" doc:name="ObjectStore Config" doc:id="616b12d6-12ca-4bb8-a3f3-d8f4654e0be2" />
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="3ce82bde-8694-4c4a-a307-270db918689a" persistent="false" config-ref="ObjectStore_Config" />
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="8ba5a844-a86f-4e76-9629-560d462a7979" >
+		<db:generic-connection url=" jdbc:postgresql://localhost:5432/hr" user="admin" password="admin" />
+	</db:config>
+</mule>

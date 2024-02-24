@@ -181,7 +181,7 @@ The API provides an endpoint (`/api/notification`) for the HR system to notify t
 
 ## Use Case 3: Security for Creation and Removal of Staff
 
-Please refer to the [Security](#security). Only authorized applications with this privilege can perform these operations.
+Please refer to [Assumptions](#assmuptions) and [Security](#security) sections for more details . Only authorized client with READ, WRITE & ADMIN role can perform API operations on HR API.
 
 ## License
 

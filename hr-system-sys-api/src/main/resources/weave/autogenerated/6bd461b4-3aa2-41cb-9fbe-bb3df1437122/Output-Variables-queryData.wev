@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_6bd461b4_3aa2_41cb_9fbe_bb3df1437122_Output_Variables_queryData = Any
+
