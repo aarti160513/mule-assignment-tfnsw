@@ -184,7 +184,7 @@ output application/json
 			</http:request>
 					<error-handler >
 						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c7909f46-e410-4550-ae74-1ce04c79a83f" type="HTTP:BAD_REQUEST" >
-							<set-variable value="400" doc:name="httpStatus 40" doc:id="3b2b8fd1-56a0-48de-8036-1d1b99b5bd1f" variableName="httpStatus" />
+							<set-variable value="400" doc:name="httpStatus 400" doc:id="3b2b8fd1-56a0-48de-8036-1d1b99b5bd1f" variableName="httpStatus" />
 							<ee:transform doc:name="Transform Message" doc:id="27aac709-bd77-44d2-8748-cd6dc1993489" >
 								<ee:message >
 									<ee:set-payload ><![CDATA[%dw 2.0
@@ -216,13 +216,31 @@ output application/json
 		<set-variable value="#[attributes.uriParams.'staffId']" doc:name="StaffID" doc:id="f4d02bd2-2d42-46ce-b966-91fa84e32334" variableName="id" />
 		<flow-ref doc:name="Fetch Role Information" doc:id="e71ac5ca-f5cc-4843-8a07-65298635dac3" name="fecth-role-information" />
 		<flow-ref doc:name="Validate Role" doc:id="ef865b8e-5787-42a9-8af8-debae8ea39de" name="validate-role" />
-		<http:request method="GET" doc:name="Request" doc:id="e3702526-9b27-40a9-836c-4926d66513d8" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff/{staffId}" >
-			<http:uri-params ><![CDATA[#[output application/java
+		<try doc:name="Try" doc:id="84cbd9bf-94c6-4e26-94cd-fc5c038aa98a" >
+			<http:request method="GET" doc:name="Request" doc:id="e3702526-9b27-40a9-836c-4926d66513d8" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff/{staffId}">
+			<http:uri-params><![CDATA[#[output application/java
 ---
 {
 	staffId : vars.id
 }]]]></http:uri-params>
 		</http:request>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="8a0bd061-b932-4c89-91a3-adbaff1f8fe1" type="HTTP:BAD_REQUEST" >
+					<set-variable value="400" doc:name="httpStatus 400" doc:id="bd582210-7659-4227-8e89-fd05b7eea6f5" variableName="httpStatus" />
+					<ee:transform doc:name="Transform Message" doc:id="85984e29-6da3-42dc-b697-ed003c2f052f" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Staff doesn't exsists. Please provide a valid Staff ID"
+}
+]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
 		<error-handler ref="globalError_Handler" />
     </flow>
     <!-- [STUDIO:"post:\notification:application\json:hr-exp-api-config"]<flow name="post:\notification:application\json:hr-exp-api-config">
@@ -245,7 +263,8 @@ output application/json
 				<raise-error doc:name="Raise error" doc:id="cabb25a3-3ab4-49f6-8531-9e9df46a4644" type="CLIENT:UNAUTHORIZED" description="Client Unauthorized to perform PUT / Update operation" />
 			</when>
 			<otherwise>
-				<http:request method="POST" doc:name="Request" doc:id="086475de-3f2c-4579-a408-60a905e62b39" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff">
+				<try doc:name="Try" doc:id="e4d59c4b-2266-4793-8237-fb6f00936b4b" >
+					<http:request method="POST" doc:name="Request" doc:id="086475de-3f2c-4579-a408-60a905e62b39" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff">
 					<http:body><![CDATA[#[vars.origRequest.request]]]></http:body>
 					<http:uri-params><![CDATA[#[output application/java
 ---
@@ -253,6 +272,23 @@ output application/json
 	"staffId" : vars.origRequest.id
 }]]]></http:uri-params>
 				</http:request>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="88e63762-72e1-4c96-b488-e81a004cb375" type="HTTP:BAD_REQUEST" >
+							<set-variable value="400" doc:name="httpStatus 400" doc:id="edcf78db-4124-4b46-b9b4-046240c4c676" variableName="httpStatus" />
+							<ee:transform doc:name="Transform Message" doc:id="a92d13cc-5ca7-4bd5-9380-59e87114c3eb" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Staff doesn't exsists. Please provide a valid Staff ID"
+}
+]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
 			</otherwise>
 		</choice>
 		<error-handler ref="globalError_Handler" />
