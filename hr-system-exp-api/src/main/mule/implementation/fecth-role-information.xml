@@ -5,6 +5,16 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<sub-flow name="validate-role" doc:id="0f337402-98ce-4920-be9b-a95d1beeb4d9" >
+		<choice doc:name="Choice" doc:id="68fb7931-6829-4e7b-b2e2-bae708695d72">
+			<when expression='#[["ADMIN", "READ", "WRITE"] contains vars.role]'>
+				<logger level="INFO" doc:name="Logger" doc:id="e3648848-20be-4747-84d1-2d6cee56b014" message='#["Valid Role " ++ vars.role ++ " to proceed "]'/>
+			</when>
+			<otherwise>
+				<raise-error doc:name="Raise error" doc:id="40c9e662-d90a-437e-9860-4117d0dba142" type="CLIENT:UNAUTHORIZED" description="Client Unauthorized to perform any operation"/>
+			</otherwise>
+		</choice>
+	</sub-flow>
 	<sub-flow name="fecth-role-information" doc:id="e32800c6-8d32-470a-9986-9188d20ce7ac" >
 		<set-variable value="#[attributes.headers.client_id]" doc:name="ClientId" doc:id="cd3070b3-238a-485b-a677-18dac075f58c" variableName="clientId"/>
 		<set-variable value="#[attributes.headers.client_secret]" doc:name="Client Secret" doc:id="bddbbae8-ed62-44b0-8f88-36c14620ae19" variableName="clientSecret" />
@@ -26,6 +36,7 @@ WHERE ClientID = :clientId]]></db:sql>
 				<choice doc:name="Choice" doc:id="e9b841e1-4871-42ed-92f1-f6b90f05ad8c" >
 					<when expression="#[sizeOf(payload) &gt; 0]">
 						<os:store doc:name="Store" doc:id="4cba7591-fd7a-45e0-bde2-6ec0114e9eb4" key="#[vars.clientId]" objectStore="Object_store" />
+						<set-variable value="#[payload.role]" doc:name="Role" doc:id="9ad7c6e0-39ac-427c-bdde-33404b1d1ed9" variableName="role" />
 					</when>
 					<otherwise >
 						<os:store doc:name="Store" doc:id="9650b918-4fdc-469e-a8d0-e1c826b3676c" key="#[vars.clientId]" objectStore="Object_store" >

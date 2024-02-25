@@ -124,77 +124,71 @@ output application/json
         </error-handler>
     </flow>
     <flow name="put:\staff\(staffId):application\json:hr-exp-api-config">
-        <flow-ref doc:name="Flow Reference" doc:id="f695b941-460b-46b4-b829-07bd6571e2a5" name="fecth-role-information"/>
-		<ee:transform doc:name="Transform Message">
-            <ee:variables>
-                <ee:set-variable variableName="staffId">attributes.uriParams.'staffId'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform doc:name="Transform Message">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Staff member Sucessfully updated" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
-    </flow>
-    <flow name="delete:\staff\(staffId):hr-exp-api-config">
-        <ee:transform doc:name="Transform Message">
-            <ee:variables>
-                <ee:set-variable variableName="staffId">attributes.uriParams.'staffId'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-    </flow>
-    <flow name="get:\staff:hr-exp-api-config">
-        <flow-ref doc:name="Flow Reference" doc:id="b6d1ad6a-4773-4722-ad78-62e47f58e47a" name="fecth-role-information"/>
-		<choice doc:name="Choice" doc:id="68fb7931-6829-4e7b-b2e2-bae708695d72">
-			<when expression='#[["ADMIN", "READ", "WRITE"] contains payload]'>
-				<ee:transform doc:name="Transform Message">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Staff member Sucessfully offboarded" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;---&#10;{&#10;	id: attributes.uriParams.'staffId',&#10;	request: payload,&#10;	queryParams: attributes.queryParams&#10;}]" doc:name="Original HTTP Details" doc:id="bc71a2f3-7cee-4df2-83de-a8082676d0c7" variableName="origRequest"/>
+		<flow-ref doc:name="Fetch Role Information" doc:id="dffc4242-4f52-451d-a0f7-ae77b58f97a2" name="fecth-role-information" />
+		<flow-ref doc:name="Validate Role" doc:id="52204790-025b-4fac-b7e1-5e5dcb889f8c" name="validate-role" />
+		<choice doc:name="Choice" doc:id="04e884ed-4032-4d33-a291-101e34a7f082" >
+			<when expression='#["READ" == vars.role]'>
+				<raise-error doc:name="Raise error" doc:id="d6ece4c3-2d54-4aa4-a425-37ca8d80fed2" type="CLIENT:UNAUTHORIZED" description="Client Unauthorized to perform PUT / Update operation"/>
 			</when>
-			<otherwise>
-				<set-variable value="401" doc:name="httpStatus" doc:id="cf44144b-b752-4e61-8930-f9f0de584ed1" variableName="httpStatus" />
-			</otherwise>
-		</choice>
-    </flow>
-    <flow name="get:\staff\(staffId):hr-exp-api-config">
-        <ee:transform doc:name="Transform Message">
-            <ee:variables>
-                <ee:set-variable variableName="staffId">attributes.uriParams.'staffId'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform doc:name="Transform Message">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
+			<otherwise >
+				<http:request method="PUT" doc:name="Request" doc:id="bed26fca-4b3b-4244-b8a2-ed5058083614" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff">
+			<http:body ><![CDATA[#[vars.origRequest.request]]]></http:body>
+					<http:uri-params><![CDATA[#[output application/java
 ---
 {
-  id: "1",
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  role: "Manager",
-  active: true
-} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+	"staffId" : vars.origRequest.id
+}]]]></http:uri-params>
+		</http:request>
+			</otherwise>
+		</choice>
+		<error-handler ref="globalError_Handler" />
+    </flow>
+    <flow name="delete:\staff\(staffId):hr-exp-api-config">
+		<set-variable value="#[attributes.uriParams.'staffId']" doc:name="StaffID" doc:id="621331d4-8e0a-4350-a73d-4faea5a718c6" variableName="id"/>
+		<flow-ref doc:name="Fetch Role Information" doc:id="02dec4a2-f966-4ae7-ac57-f7240e1bc9ed" name="fecth-role-information" />
+		<flow-ref doc:name="Validate Role" doc:id="982396c5-9e81-4925-896d-b6563ef34149" name="validate-role" />
+		<choice doc:name="Choice" doc:id="62fb59af-7cf9-47be-b98b-ea51bd554ecf" >
+			<when expression='#["READ" == vars.role]' >
+				<raise-error doc:name="Raise error" doc:id="cfc8124e-fb38-49f6-819a-7a22a1668e44" type="CLIENT:UNAUTHORIZED" description="Client Unauthorized to perform PUT / Update operation" />
+			</when>
+			<otherwise>
+				<http:request method="DELETE" doc:name="Request" doc:id="93d399c0-fd38-461a-94d2-54f7e59c18ae" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff">
+				<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"staffId" : vars.id
+}]]]></http:uri-params>
+			</http:request>
+			</otherwise>
+		</choice>
+		<error-handler ref="globalError_Handler" />
+    </flow>
+    <flow name="get:\staff:hr-exp-api-config">
+        <set-variable value="#[%dw 2.0&#10;output application/java&#10;---&#10;{&#10;	request: payload,&#10;	queryParams: attributes.queryParams&#10;}]" doc:name="Original HTTP Details" doc:id="1b9fca7f-0d7f-498a-9eb0-0530b6ea0760" variableName="origRequest" />
+		<flow-ref doc:name="Fetch Role Information" doc:id="b6d1ad6a-4773-4722-ad78-62e47f58e47a" name="fecth-role-information"/>
+		<flow-ref doc:name="Validate Role" doc:id="fe728bc1-d467-4cb2-9ac2-aad808e0ed88" name="validate-role" />
+		<http:request method="GET" doc:name="Request" doc:id="caca8002-abde-439d-a8c8-f6eb9ac44f10" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff" >
+			<http:query-params ><![CDATA[#[vars.origRequest.queryParams]]]></http:query-params>
+		</http:request>
+		<error-handler ref="globalError_Handler"/>
+    </flow>
+    <flow name="get:\staff\(staffId):hr-exp-api-config">
+		<set-variable value="#[attributes.uriParams.'staffId']" doc:name="StaffID" doc:id="f4d02bd2-2d42-46ce-b966-91fa84e32334" variableName="id" />
+		<flow-ref doc:name="Fetch Role Information" doc:id="e71ac5ca-f5cc-4843-8a07-65298635dac3" name="fecth-role-information" />
+		<flow-ref doc:name="Validate Role" doc:id="ef865b8e-5787-42a9-8af8-debae8ea39de" name="validate-role" />
+		<http:request method="GET" doc:name="Request" doc:id="e3702526-9b27-40a9-836c-4926d66513d8" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff" >
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	staffId : vars.id
+}]]]></http:uri-params>
+			<http:query-params ><![CDATA[#[vars.id]]]></http:query-params>
+		</http:request>
+		<error-handler ref="globalError_Handler" />
     </flow>
     <flow name="post:\notification:application\json:hr-exp-api-config">
-        <ee:transform doc:name="Transform Message">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Notification processed sucessfully" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+		<error-handler ref="globalError_Handler" />
     </flow>
     <flow name="post:\staff:application\json:hr-exp-api-config">
         <ee:transform doc:name="Transform Message">
@@ -205,6 +199,25 @@ output application/json
 "Staff member Sucessfully created" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;---&#10;{&#10;	request: payload,&#10;}]" doc:name="Original HTTP Details" doc:id="a54fdd66-326a-42f3-ad95-a43b1cf25b33" variableName="origRequest" />
+		<flow-ref doc:name="Fetch Role Information" doc:id="6ed1176a-c7ea-4359-ac8e-f1118ca5cf6f" name="fecth-role-information" />
+		<flow-ref doc:name="Validate Role" doc:id="04cbb43a-a775-4876-bd2b-ca09d437af2d" name="validate-role" />
+		<choice doc:name="Choice" doc:id="deb6e173-e9a6-4614-9110-3efaa1ea9f2e">
+			<when expression='#["READ" == vars.role]'>
+				<raise-error doc:name="Raise error" doc:id="cabb25a3-3ab4-49f6-8531-9e9df46a4644" type="CLIENT:UNAUTHORIZED" description="Client Unauthorized to perform PUT / Update operation" />
+			</when>
+			<otherwise>
+				<http:request method="POST" doc:name="Request" doc:id="086475de-3f2c-4579-a408-60a905e62b39" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff">
+					<http:body><![CDATA[#[vars.origRequest.request]]]></http:body>
+					<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"staffId" : vars.origRequest.id
+}]]]></http:uri-params>
+				</http:request>
+			</otherwise>
+		</choice>
+		<error-handler ref="globalError_Handler" />
     </flow>
     <flow name="put:\notification\update:application\json:hr-exp-api-config">
         <ee:transform doc:name="Transform Message">
@@ -215,6 +228,7 @@ output application/json
 "Notification processed sucessfully" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<error-handler ref="globalError_Handler" />
     </flow>
     <flow name="post:\notification\create:application\json:hr-exp-api-config">
         <ee:transform doc:name="Transform Message">
@@ -225,5 +239,6 @@ output application/json
 "Notification processed sucessfully" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<error-handler ref="globalError_Handler" />
     </flow>
 </mule>

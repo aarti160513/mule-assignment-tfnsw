@@ -1,0 +1,15 @@
+---
+hr:
+ host: "localhost"
+ port: "8083"
+
+procurement:
+  host: "procurment.tafensw.edu.au"
+  port: "8080"
+
+database:
+  host: "localhost"
+  port: "3306"
+  user: "hradmin"
+  db: "hr"
+  password: "hradmin"
