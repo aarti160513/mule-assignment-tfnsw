@@ -29,7 +29,8 @@ The API exposes the following endpoints:
 - **POST /api/staff**: Create a new staff member.
 - **PUT /api/staff/{staffId}**: Update an existing staff member.
 - **DELETE /api/staff/{staffId}**: Offboard a staff member.
-- **POST /api/notifications/staffChange**: Notify the API of changed staff records.
+- **POST /api/notifications/create**: Notify the API of newly created staff records.
+- **PUT /api/notifications/update**: Notify the API of updtaed staff records.
 
 ## Security
 
@@ -59,7 +60,6 @@ curl --location 'https://hr.tafensw.gov.au/wms-exp/api/staff?active=true&p=2&ps1
     "total": 324,
     "staff":[
         {
-            "id": "1",
             "firstName": "John",
             "lastName": "Doe",
             "email": "john.doe@example.com",
@@ -67,7 +67,6 @@ curl --location 'https://hr.tafensw.gov.au/wms-exp/api/staff?active=true&p=2&ps1
             "active": true
         },
         {
-            "id": "2",
             "firstName": "Jane",
             "lastName": "Citizen",
             "email": "jane.citizen@example.com",
@@ -88,7 +87,6 @@ curl --location 'https://hr.tafensw.gov.au/wms-exp/api/staff/1 \
 
     {
 
-         "id": "1",
          "firstName": "John",
          "lastName": "Doe",
          "email": "john.doe@example.com",
@@ -147,21 +145,21 @@ Reponse:
 
 The API provides an endpoint (`/api/notification`) for the HR system to notify the API of changed staff records.
 
-1. `/api/notification/staff` - HTTP POST  
+1. `/api/notification/create` - HTTP POST  
    Notify of a nrewly created staff . The Staff is subsequently created in the procurement system. Please consult the request provided below for reference
 
 ```
     curl --request PUT --location 'https://hr.tafensw.gov.au/wms-exp/api/staff/1 \
         --header 'client_id: XXXXXXXXXXXXXXXX' \
         --header 'client_secret: XXXXXXXXXXXXX'
-        --data-raw ' {
+        --data-raw ' [{
             "id": "1",
             "firstName": "John",
             "lastName": "Doe",
             "email": "john.doe@example.com",
             "role": "Manager",
             "active": true
-        }'
+        }]'
 ```
 
 2. `/api/notification/staff{staffId}` - HTTP PUT  

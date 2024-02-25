@@ -1,5 +1,5 @@
 #%RAML 1.0
-title: hr-sys-api
+title: hr-exp-api
 description: API to intreact with HR System
 mediaType: application/json
 
@@ -8,10 +8,16 @@ types:
   Staff: !include datatypes/Staff.raml
   StaffResp: !include datatypes/StaffResp.raml
 
+traits:
+  clientIdRequired: !include traits/hasClientIdHeader.raml
+
 /staff:
+#List staff members
     get:
-      description: Retrieve a list of all staff members.
-       queryParameters:
+      is:
+        - clientIdRequired
+      description: Retrieve a list of all staff members
+      queryParameters:
         firstName?:
           description: First Name of Staff member
           type: string
@@ -49,6 +55,9 @@ types:
               type: Error
               example: !include ./examples/ErrorExample.raml
     post:
+    #Create new staff member
+        is:
+          - clientIdRequired
         description: Create a new staff member.
         body:
           application/json:
@@ -59,29 +68,25 @@ types:
             body: 
               text/plain: 
                 example: |
-                  Staff member Sucessfully created with Id 1
-          400:
-            description: Error in user request
-            body:
-              application/json:
-                type: Error
-                example: !include ./examples/ErrorExample.raml
+                  Staff member Sucessfully created with ID 1
           401:
             description: Unauthorized access 
-            body:
-              application/json:
-                type: Error
-                example: !include ./examples/ErrorExample.raml
-
+            body: 
+              text/plain: 
+                example: |
+                  Unauthorized. Special privilege token required
     /{staffId}:
+    #Get specific staff member
       get:
-        description: Get details of an exisiting staff
+        is:
+          - clientIdRequired
+        description: Get a specific staff member
         responses:
           200:
-            description: Staff member retrieved successfully.
-            body: 
+            body:
               application/json:
                 type: Staff
+                example: !include ./examples/StaffExample.raml
           400:
             description: Error in user request
             body:
@@ -94,7 +99,10 @@ types:
               application/json:
                 type: Error
                 example: !include ./examples/ErrorExample.raml
+      #offboard a staff member
       delete:
+        is:
+          - clientIdRequired
         description: Delete an exisiting staff member
         responses:
           204:
@@ -115,7 +123,10 @@ types:
               application/json:
                 type: Error
                 example: !include ./examples/ErrorExample.raml
+      #update a staff member
       put:
+        is:
+          - clientIdRequired
         description: Update an exisiting staff member
         body:
           application/json:
@@ -139,3 +150,48 @@ types:
               application/json:
                 type: Error
                 example: !include ./examples/ErrorExample.raml
+
+/notification:
+  /create:
+    post:
+      is:
+          - clientIdRequired
+      description: Notify the API of changed staff records
+      body:
+        application/json:
+          type: Staff[]
+      responses:
+        201:
+          description: Notification received successfully
+          body: 
+            text/plain: 
+              example: |
+                Notification processed sucessfully
+        400:
+            description: Error in user request
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
+  /update:
+    put:
+      is:
+          - clientIdRequired
+      description: Notify the API of changed staff records
+      body:
+        application/json:
+          type: Staff[]
+      responses:
+        201:
+          description: Notification received successfully
+          body: 
+            text/plain: 
+              example: |
+                Notification processed sucessfully
+        400:
+            description: Error in user request
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
+  

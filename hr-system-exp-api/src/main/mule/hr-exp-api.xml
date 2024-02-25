@@ -3,7 +3,7 @@
     <http:listener-config name="hr-exp-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" readTimeout="90000" />
     </http:listener-config>
-    <apikit:config name="hr-exp-api-config" api="resource::5f38f098-66cc-44c4-b949-1a5e6b221f6d:hr-exp-api:1.0.2:raml:zip:hr-exp-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="hr-exp-api-config" api="resource::5f38f098-66cc-44c4-b949-1a5e6b221f6d:hr-exp-api:1.0.3:raml:zip:hr-exp-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="hr-exp-api-main">
         <http:listener config-ref="hr-exp-api-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -287,67 +287,104 @@ output application/json
         <error-handler ref="globalError_Handler" />
     </flow>
     <flow name="put:\notification\update:application\json:hr-exp-api-config">
-        <try doc:name="Try" doc:id="92a36b51-7810-4e9a-ac9a-5de088cb178c" >
-			<foreach doc:name="For Each" doc:id="a163768c-6928-4813-a1bb-96bdd867f339" collection="#[payload]">
-				<choice doc:name="Choice" doc:id="a3398be4-8189-4768-b6ed-f3ba04ad0a61">
-				<when expression="#[payload.active == true]">
-						<try doc:name="Try" doc:id="aed44368-777a-45fa-ae10-72279e938761" >
-							<http:request method="PUT" doc:name="Request" doc:id="8b080981-0b29-496b-8bea-4dad9599c4dc" path="/api/staff/{staffId}" config-ref="HTTP_Request_configuration_procurement_api">
-								<http:uri-params ><![CDATA[#[{
+        <try doc:name="Try" doc:id="92a36b51-7810-4e9a-ac9a-5de088cb178c">
+            <foreach doc:name="For Each" doc:id="a163768c-6928-4813-a1bb-96bdd867f339" collection="#[payload]">
+                <choice doc:name="Choice" doc:id="a3398be4-8189-4768-b6ed-f3ba04ad0a61">
+                    <when expression="#[payload.active == true]">
+                        <try doc:name="Try" doc:id="aed44368-777a-45fa-ae10-72279e938761">
+                            <http:request method="PUT" doc:name="Request" doc:id="8b080981-0b29-496b-8bea-4dad9599c4dc" path="/api/staff/{staffId}" config-ref="HTTP_Request_configuration_procurement_api">
+                                <http:uri-params><![CDATA[#[{
 	staffId: payload.id
 }]]]></http:uri-params>
-							</http:request>
-							<error-handler>
-								<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5d477286-f5b7-4532-b8c1-505aafb5b535" >
-									<set-variable value="400" doc:name="httpStatus 40" doc:id="39bb7f03-b0e1-4a2b-a6fb-90ea0be52967" variableName="httpStatus" />
-									<ee:transform doc:name="Transform Message" doc:id="cf06447f-b40c-4cab-847b-80c1edd2a7d1" >
-										<ee:message >
-											<ee:set-payload ><![CDATA[%dw 2.0
+                            </http:request>
+                            <error-handler>
+                                <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5d477286-f5b7-4532-b8c1-505aafb5b535">
+                                    <set-variable value="400" doc:name="httpStatus 40" doc:id="39bb7f03-b0e1-4a2b-a6fb-90ea0be52967" variableName="httpStatus" />
+                                    <ee:transform doc:name="Transform Message" doc:id="cf06447f-b40c-4cab-847b-80c1edd2a7d1">
+                                        <ee:message>
+                                            <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	message: "Staff doesn't exsists. Please provide a valid Staff ID"
 }]]></ee:set-payload>
-										</ee:message>
-									</ee:transform>
-								</on-error-propagate>
-							</error-handler>
-						</try>
-					</when>
-					<otherwise >
-						<try doc:name="Try" doc:id="5623c2cc-ee84-4257-9c21-f2e1aeb547ba" >
-							<http:request method="DELETE" doc:name="Request" doc:id="63a0e26f-8e35-4bc8-8c93-1f271dc2bd82" path="/api/staff/{staffId}" config-ref="HTTP_Request_configuration_procurement_api">
-								<http:uri-params ><![CDATA[#[{
+                                        </ee:message>
+                                    </ee:transform>
+                                </on-error-propagate>
+                            </error-handler>
+                        </try>
+                    </when>
+                    <otherwise>
+                        <try doc:name="Try" doc:id="5623c2cc-ee84-4257-9c21-f2e1aeb547ba">
+                            <http:request method="DELETE" doc:name="Request" doc:id="63a0e26f-8e35-4bc8-8c93-1f271dc2bd82" path="/api/staff/{staffId}" config-ref="HTTP_Request_configuration_procurement_api">
+                                <http:uri-params><![CDATA[#[{
 	staffId: payload.id
 }]]]></http:uri-params>
-							</http:request>
-							<ee:transform doc:name="Transform Message" doc:id="c8f10914-c9cc-4b2c-9d7d-dd6aacc046b0" >
-								<ee:message >
-									<ee:set-payload ><![CDATA[%dw 2.0
+                            </http:request>
+                            <ee:transform doc:name="Transform Message" doc:id="c8f10914-c9cc-4b2c-9d7d-dd6aacc046b0">
+                                <ee:message>
+                                    <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 "Notification processed sucessfully" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
-								</ee:message>
-							</ee:transform>
-							<error-handler >
-								<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e188c357-a1f3-4da1-b8a0-539d4cff82ea" >
-									<set-variable value="400" doc:name="httpStatus 400" doc:id="f7253040-5f57-4471-ad55-6adbcdcafe5b" variableName="httpStatus" />
-									<ee:transform doc:name="Transform Message" doc:id="97e6edd6-f7be-4ebc-b7c7-139650848b8f">
-										<ee:message>
-											<ee:set-payload><![CDATA[%dw 2.0
+                                </ee:message>
+                            </ee:transform>
+                            <error-handler>
+                                <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e188c357-a1f3-4da1-b8a0-539d4cff82ea">
+                                    <set-variable value="400" doc:name="httpStatus 400" doc:id="f7253040-5f57-4471-ad55-6adbcdcafe5b" variableName="httpStatus" />
+                                    <ee:transform doc:name="Transform Message" doc:id="97e6edd6-f7be-4ebc-b7c7-139650848b8f">
+                                        <ee:message>
+                                            <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	message: "Staff doesn't exsists. Please provide a valid Staff ID"
 }]]></ee:set-payload>
-										</ee:message>
-									</ee:transform>
-								</on-error-propagate>
-							</error-handler>
-						</try>
-					</otherwise>
-			</choice>
-				<ee:transform doc:name="Transform Message">
+                                        </ee:message>
+                                    </ee:transform>
+                                </on-error-propagate>
+                            </error-handler>
+                        </try>
+                    </otherwise>
+                </choice>
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+"Notification processed sucessfully" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+            </foreach>
+        </try>
+        <error-handler ref="globalError_Handler" />
+    </flow>
+    <flow name="post:\notification\create:application\json:hr-exp-api-config">
+        <foreach doc:name="For Each" doc:id="ffd6f3f6-de38-40e9-bf3a-ab7906e8c291" collection="#[payload]">
+            <try doc:name="Try" doc:id="71e20083-db24-4232-b1b5-f0b78280946a">
+                <http:request method="PUT" doc:name="Request" doc:id="46e005f5-5a98-4f7f-a45a-2a23b0d3b4ec" path="/api/staff/{staffId}" config-ref="HTTP_Request_configuration_procurement_api">
+                    <http:uri-params><![CDATA[#[{
+	staffId: payload.id
+}]]]></http:uri-params>
+                </http:request>
+                <error-handler>
+                    <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5a53cc18-67ad-4e53-a176-e6928ad16c59">
+                        <set-variable value="400" doc:name="httpStatus 400" doc:id="2a893b65-087d-46d3-93c5-d4f980d45598" variableName="httpStatus" />
+                        <ee:transform doc:name="Transform Message" doc:id="0690057f-2cf8-4b3c-8e60-32d073473555">
+                            <ee:message>
+                                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Staff doesn't exsists. Please provide a valid Staff ID"
+}]]></ee:set-payload>
+                            </ee:message>
+                        </ee:transform>
+                    </on-error-propagate>
+                </error-handler>
+            </try>
+        </foreach>
+        <ee:transform doc:name="Transform Message" doc:id="bd7c91bf-c700-4d5e-8ecc-d3c7c0d9648c">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -355,43 +392,6 @@ output application/json
 "Notification processed sucessfully" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-			</foreach>
-		</try>
         <error-handler ref="globalError_Handler" />
-    </flow>
-    <flow name="post:\notification\create:application\json:hr-exp-api-config">
-        <foreach doc:name="For Each" doc:id="ffd6f3f6-de38-40e9-bf3a-ab7906e8c291" collection="#[payload]">
-			<try doc:name="Try" doc:id="71e20083-db24-4232-b1b5-f0b78280946a" >
-				<http:request method="PUT" doc:name="Request" doc:id="46e005f5-5a98-4f7f-a45a-2a23b0d3b4ec" path="/api/staff/{staffId}" config-ref="HTTP_Request_configuration_procurement_api">
-					<http:uri-params ><![CDATA[#[{
-	staffId: payload.id
-}]]]></http:uri-params>
-				</http:request>
-				<error-handler>
-					<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5a53cc18-67ad-4e53-a176-e6928ad16c59" >
-						<set-variable value="400" doc:name="httpStatus 400" doc:id="2a893b65-087d-46d3-93c5-d4f980d45598" variableName="httpStatus" />
-						<ee:transform doc:name="Transform Message" doc:id="0690057f-2cf8-4b3c-8e60-32d073473555" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message: "Staff doesn't exsists. Please provide a valid Staff ID"
-}]]></ee:set-payload>
-							</ee:message>
-						</ee:transform>
-					</on-error-propagate>
-				</error-handler>
-			</try>
-		</foreach>
-        <ee:transform doc:name="Transform Message" doc:id="bd7c91bf-c700-4d5e-8ecc-d3c7c0d9648c">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Notification processed sucessfully" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-		<error-handler ref="globalError_Handler" />
     </flow>
 </mule>

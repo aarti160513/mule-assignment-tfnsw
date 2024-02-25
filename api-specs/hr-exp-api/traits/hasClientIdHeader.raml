@@ -1,0 +1,17 @@
+#%RAML 1.0 Trait
+headers:
+  client_id:
+    type: string
+    description: Client ID of the APP
+    required: true
+  client_secret:
+    type: string
+    description: Client Secret assosiated with the Client ID
+    required: true
+responses:
+  401:
+    description: Unauthorized access 
+    body: 
+      text/plain: 
+        example: |
+           Unauthorized. Special privilege id/secret required

@@ -77,12 +77,9 @@ WHERE FirstName = :firstName
 		<ee:transform doc:name="Transform Message" doc:id="130a9a11-09f8-4872-802d-9a3cba60d813" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output text/plain
 ---
-{
-	id: payload.id[0],
-	message: "Staff Sucessfully created"
-}]]></ee:set-payload>
+"Staff Sucessfully created with Id " ++ payload.id[0] as String]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</sub-flow>
