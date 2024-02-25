@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="hr-expi-test-suite.xml" />
+	<munit:test name="hr-expi-test-suite-sucessfull-get" doc:id="252b8e56-0261-4893-91cb-3fc4b88a03dd" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock HTTP GET" doc:id="74219a2a-97b6-48e3-b827-d0ab66e4c8f2" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="caca8002-abde-439d-a8c8-f6eb9ac44f10" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[%dw 2.0 &#10;output application/json&#10;---&#10;{&#10;    "total": 100,&#10;    "staffs": [&#10;        {&#10;            "FirstName": "Moishe",&#10;            "Role": " Sr. Manager",&#10;            "Active": false,&#10;            "Email": "mgillespie0@flickr.com",&#10;            "LastName": "Gillespie"&#10;        },&#10;        {&#10;            "FirstName": "Josy",&#10;            "Role": "Surveyor",&#10;            "Active": false,&#10;            "Email": "jannable1@edublogs.org",&#10;            "LastName": "Annable"&#10;        }]&#10;  }]' mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock DB REquest" doc:id="0456e522-c20f-4768-8cd5-1345c631a9b8" processor="db:query-single">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="181b23ef-dd3c-4a46-9476-b7b732721c8b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;	role: "ADMIN"&#10;}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Event" doc:id="a055bfd6-2ba2-4c85-9f4d-6db354c6a106" >
+				<munit:attributes value='#[{&#10;	queryParams:{&#10;			staffId: 1&#10;		},&#10;	headers:{&#10;		client_id: "0034ab32-9f55-4758-a075-7042d5559dd2",&#10;		client_secret: "9127d307-b9b5-48fd-9b0c-4db2a1960402"&#10;	}&#10;}]' encoding="UTF-8" mediaType="application/java" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow Reference" doc:id="21ce737f-0598-4463-a3fd-164e75ba513c" name="get:\staff:hr-exp-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="f3f2d252-5c3a-4337-9e10-023028a2dffd" actual="#[sizeOf(payload.staffs)]" expected="#[2]" message="Incorrect Staff response"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

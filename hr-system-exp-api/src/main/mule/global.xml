@@ -13,9 +13,12 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<db:my-sql-connection host="localhost" port="3306" user="hradmin" password="hradmin" database="hr" />
 	</db:config>
 	<http:request-config name="HTTP_Request_configuration_sys_api" doc:name="HTTP Request configuration" doc:id="bcee01c8-0da5-4290-bcf6-9ca0d211d791" >
-		<http:request-connection host="localhost" port="8083" />
+		<http:request-connection host="${sys-api.host}" port="${sys-api.port}" />
 	</http:request-config>
 	<configuration-properties doc:name="Configuration properties" doc:id="6efeb65e-cc34-4ca4-9c97-938e1f799e3b" file="properties.yaml" />
+	<http:request-config name="HTTP_Request_configuration_procurement_api" doc:name="HTTP Request configuration" doc:id="050f0f07-4114-47a9-9601-f06051b06ea0" >
+		<http:request-connection host="${procurement.host}" port="${procurement.port}" />
+	</http:request-config>
 	<error-handler name="globalError_Handler" doc:id="4833dfea-d334-47d7-acc5-d4c301796617" >
 		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9c6a714e-2b8e-4e7b-9d92-11a9ed722627" type="CLIENT:UNAUTHORIZED">
 			<set-variable value="401" doc:name="Set Variable" doc:id="cc4e7822-916a-498a-baf6-c6b737cea50e" variableName="httpStatus"/>
