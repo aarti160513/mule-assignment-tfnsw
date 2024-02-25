@@ -124,22 +124,29 @@ output application/json
         </error-handler>
     </flow>
     <flow name="put:\staff\(staffId):application\json:hr-sys-api-config">
-        <flow-ref doc:name="Flow Reference" doc:id="58232c80-c7fe-404b-8b3a-19f5b82c0a42" name="update-staff-details-with-id"/>
+        <set-variable value="#[attributes.uriParams.'staffId']" doc:name="Staff ID" doc:id="843230a2-e18b-460a-aa66-b9db0171e141" variableName="id"/>
+		<flow-ref doc:name="Flow Reference" doc:id="58232c80-c7fe-404b-8b3a-19f5b82c0a42" name="update-staff-details-with-id"/>
+		<ee:transform doc:name="Transform Message" doc:id="52f3e245-c3ca-4ac4-b990-0f6df0c39b38">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+---
+"Staff member Sucessfully updated"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
     </flow>
     <flow name="delete:\staff\(staffId):hr-sys-api-config">
-        <ee:transform doc:name="Transform Message">
-            <ee:variables>
-                <ee:set-variable variableName="staffId">attributes.uriParams.'staffId'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform doc:name="Transform Message">
+        <set-variable value="#[attributes.uriParams.'staffId']" doc:name="Staff ID" doc:id="bb01a63f-667a-4553-be47-e1c3a6dea08f" variableName="id" />
+		<flow-ref doc:name="Flow Reference" doc:id="33f6d9b3-dbcc-44a1-9fe1-fa0073e7a5a9" name="delete-staff-details-with-id"/>
+		<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
-output application/json
+output text/plain
 ---
-"Staff member Sucessfully offboarded" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+"Staff member Sucessfully offboarded"]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<error-handler ref="globalError_Handler" />
     </flow>
     <flow name="get:\staff:hr-sys-api-config">
         <flow-ref doc:name="Flow Reference" doc:id="fe79b755-b617-4648-a5c5-d4ee6699f75a" name="get-staff-details" />
@@ -151,31 +158,15 @@ output application/json
 payload]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<error-handler ref="globalError_Handler"/>
     </flow>
     <flow name="post:\staff:application\json:hr-sys-api-config">
-        <flow-ref doc:name="Flow Reference" doc:id="5ee71417-e1fb-41b3-bfcd-7ec5d02df892" name="get-staff-details" />
+        <flow-ref doc:name="Flow Reference" doc:id="5ee71417-e1fb-41b3-bfcd-7ec5d02df892" name="create-staff" />
+		<error-handler ref="globalError_Handler" />
     </flow>
     <flow name="get:\staff\(staffId):hr-sys-api-config">
-        <flow-ref doc:name="Flow Reference" doc:id="8d44ad97-831a-4c60-848f-8f583cc226f8" name="get-staff-detail-with-id" />
-        <ee:transform doc:name="Transform Message">
-            <ee:variables>
-                <ee:set-variable variableName="staffId">attributes.uriParams.'staffId'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform doc:name="Transform Message">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  id: "1",
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  role: "Manager",
-  active: true
-} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+        <set-variable value="#[attributes.uriParams.'staffId']" doc:name="Staff ID" doc:id="9bf088da-5855-4f30-9c9d-7cbfb025aea7" variableName="id" />
+		<flow-ref doc:name="Flow Reference" doc:id="8d44ad97-831a-4c60-848f-8f583cc226f8" name="get-staff-detail-with-id" />
+		<error-handler ref="globalError_Handler" />
     </flow>
 </mule>

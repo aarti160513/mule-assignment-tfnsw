@@ -1,10 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="f506d1b6-97fa-4910-95c7-9c1156f2194f" >
-		<db:my-sql-connection host="localhost" port="3306" user="hradmin" password="hradmin" database="hr" />
+		<db:my-sql-connection host="${database.host}" port="${database.port}" user="${database.user}" password="${database.password}" database="${database.db}" />
 	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="7a59390a-8651-4cd1-b6dd-05169268d104" file="properties.yaml" />
+	<error-handler name="globalError_Handler" doc:id="33290a45-8e9f-4b43-a87a-c660aa868484" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4fdb903c-97d9-4d12-a83f-ddb16d281e22" type="STAFF:NOTFOUND">
+			<set-variable value="400" doc:name="Set Variable" doc:id="76130fbb-93bb-4be9-9b2f-282860cd8c6f" variableName="httpStatus"/>
+			<ee:transform doc:name="Transform Message" doc:id="7a80fb7b-26a2-4b2f-90f5-278f0b9c8f8e" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Staff nor found. Please provide a valid Staff ID"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4ae6786b-8efd-490a-bafc-16da080683c9" type="ANY">
+			<set-variable value="500" doc:name="HTTP Status Code" doc:id="17a69279-0af8-4004-a299-7d227858ad25" variableName="httpStatus" />
+			<ee:transform doc:name="Transform Message" doc:id="5c27504e-a483-48ef-95f1-418043adbe37">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"error": error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
 </mule>

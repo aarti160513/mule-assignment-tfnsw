@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="get-staff-details" doc:id="b6f3b91e-f203-44b3-b9b0-61a677a0a223" >
+		<set-variable value="#[if (attributes.queryParams.'p' != null) attributes.queryParams.'p' as Number else 1]" doc:name="Set Page" doc:id="0baed40c-1910-4c37-98c2-2a7b834e54b4" variableName="page" />
+		<set-variable value="#[if (attributes.queryParams.'ps' != null) attributes.queryParams.'ps' as Number else 50]" doc:name="Set PageSize" doc:id="531fa42b-246b-4dc5-98c4-ffd2deea0e3f" variableName="pageSize" />
+		<db:select doc:name="Count Total Staff" doc:id="b2906915-ebe7-4803-aa9c-0cdee933de2f" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT COUNT(*) as total 
+FROM staff]]></db:sql>
+		</db:select>
+		<set-variable value="#[payload.total]" doc:name="Total Staff" doc:id="ad46fd55-6977-46b2-9db5-ce817ce5c8f7" variableName="total"/>
+		<db:select doc:name="Select all Staff" doc:id="7055436c-568d-4450-910e-827174a17d50" config-ref="Database_Config" >
+			<db:sql ><![CDATA[SELECT FirstName,LastName,Email, Role, Active
+FROM staff
+WHERE id > :min AND id <= :max
+ORDER BY id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{ 
+	min: (vars.page - 1) * vars.pageSize,
+	max: vars.page * vars.pageSize
+	
+}]]]></db:input-parameters>
+		</db:select>
+		<logger level="INFO" doc:name="Logger" doc:id="e76da201-2efd-42cb-82cb-e91826125057" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="19095055-4989-4a41-b83c-c86461189502" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"total": vars.total[0],
+	"staffs": payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="get-staff-detail-with-id" doc:id="de630db2-b664-442a-9a47-d7ff66c7210d" >
+		<db:select doc:name="Get a Specific Staff Details" doc:id="7716f6b7-b0a8-4dfe-a455-24c4e200929a" config-ref="Database_Config" >
+			<db:sql ><![CDATA[SELECT FirstName,LastName,Email, Role, Active
+FROM staff
+WHERE id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: vars.id
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="13584dfb-198a-4d2d-9210-ef5155d3581e" >
+			<when expression="#[sizeOf(payload) == 0]">
+				<raise-error doc:name="Raise error" doc:id="257f662f-9052-4009-9ae5-92357fcbe373" type="STAFF:NOTFOUND" description="Staff doesn't exsists. Please provide a valid Stadff Id"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="f6c3f9c0-855b-454e-9ecb-5884b5c952c5" message="#[payload]" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="create-staff" doc:id="dcf85f72-edf3-4283-b08d-7ddd87bbbc63" >
+		<set-variable value="#[payload]" doc:name="Original Payload" doc:id="94d377cf-1cdf-47ab-b6ba-fc9ac2f4c2e3" variableName="origPayload"/>
+		<db:insert doc:name="Create Staff" doc:id="9153bff5-df2b-4cae-871d-2a541b21bff1" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO staff (FirstName, LastName, Email, Role, Active)
+VALUES (:firstName, :lastName, :email, :role, :active)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[vars.origPayload]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="31083943-6afa-4a2f-b769-b98845d6477a" message="#[payload]"/>
+		<db:select doc:name="Get Staff ID" doc:id="cea5fd49-8b81-4822-a070-41fd53a15847" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT id
+FROM staff 
+WHERE FirstName = :firstName
+	AND LastName = :lastName
+	AND Email = :email
+	AND Role = :role
+	AND Active = :active]]></db:sql>
+			<db:input-parameters ><![CDATA[#[vars.origPayload]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="130a9a11-09f8-4872-802d-9a3cba60d813" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	id: payload.id[0],
+	message: "Staff Sucessfully created"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="update-staff-details-with-id" doc:id="6bd461b4-3aa2-41cb-9fbe-bb3df1437122" >
+		<set-variable value='#[%dw 2.0 &#10;output application/java&#10;---&#10;"UPDATE staff \n"&#10;++ &#10;"SET \n"&#10;++&#10;(keysOf(&#10;    payload filterObject ((value, key, index) -&gt; (value != null and value != ""))&#10;    ) &#10; map ( $ ++ " = :" ++ $)&#10; joinBy  " , \n")&#10;&#10; ++ "\n"&#10; ++ "WHERE id = :id"&#10;&#10;//"UPDATE staff SET role = :role, active = :active WHERE id = :id"]' doc:name="SQL Query" doc:id="5bd7816f-7b9e-43b9-b207-f24dd8945d36" variableName="query" />
+		<set-variable value='#[%dw 2.0 &#10;output application/java&#10;---&#10;payload ++ {&#10;	"id" : vars.id&#10;}&#10;&#10;//{&#10;//  role : "Manager",&#10;//  active: true,&#10;//  id : 1&#10;//}]' doc:name="Query Data" doc:id="5957847b-9d06-4e88-8633-ccadca2572c9" variableName="queryData" />
+		<flow-ref doc:name="Get Staff Details" doc:id="7ad979f3-d62e-4c79-ad7c-7771201a6f47" name="get-staff-detail-with-id"/>
+		<db:update doc:name="Update Staff Details" doc:id="ba9fbcb8-9074-42f2-a47b-6b832d2a148d" config-ref="Database_Config">
+			<db:sql><![CDATA[#[vars.query]]]></db:sql>
+			<db:input-parameters><![CDATA[#[vars.queryData]]]></db:input-parameters>
+		</db:update>
+		<logger level="INFO" doc:name="Logger" doc:id="1b3a4ea6-f78b-4e7c-97ed-64bd568ff487" message="#[payload]" />
+	</sub-flow>
+	<sub-flow name="delete-staff-details-with-id" doc:id="1dc0069f-dc11-4bf5-a00a-9eb033b9625e" >
+		<flow-ref doc:name="Get Staff Details" doc:id="32d1bf84-3c42-4978-8874-7bbd1fc0be02" name="get-staff-detail-with-id"/>
+		<db:update doc:name="Delete Staff" doc:id="d53d1ac3-6991-49fc-a266-9f20b899da65" config-ref="Database_Config">
+			<db:sql ><![CDATA[UPDATE staff
+SET active = false
+WHERE id = :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: vars.id
+}]]]></db:input-parameters>
+		</db:update>
+		<logger level="INFO" doc:name="Logger" doc:id="92057a8c-9ac4-4668-b74d-c5d1c358d658" message="#[payload]"/>
+	</sub-flow>
+</mule>
