@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
     <http:listener-config name="hr-exp-api-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="8081" />
+        <http:listener-connection host="0.0.0.0" port="8081" readTimeout="90000"/>
     </http:listener-config>
     <apikit:config name="hr-exp-api-config" api="resource::5f38f098-66cc-44c4-b949-1a5e6b221f6d:hr-exp-api:1.0.1:raml:zip:hr-exp-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="hr-exp-api-main">
@@ -132,14 +132,35 @@ output application/json
 				<raise-error doc:name="Raise error" doc:id="d6ece4c3-2d54-4aa4-a425-37ca8d80fed2" type="CLIENT:UNAUTHORIZED" description="Client Unauthorized to perform PUT / Update operation"/>
 			</when>
 			<otherwise >
-				<http:request method="PUT" doc:name="Request" doc:id="bed26fca-4b3b-4244-b8a2-ed5058083614" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff">
-			<http:body ><![CDATA[#[vars.origRequest.request]]]></http:body>
+				<try doc:name="Try" doc:id="7e6a9fdc-fcaa-4bed-bcc9-2235185f5fd5" >
+					<http:request method="PUT" doc:name="Request" doc:id="bed26fca-4b3b-4244-b8a2-ed5058083614" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff/{staffId}">
+			<http:body><![CDATA[#[%dw 2.0
+output application/json 
+---
+vars.origRequest.request]]]></http:body>
 					<http:uri-params><![CDATA[#[output application/java
 ---
 {
 	"staffId" : vars.origRequest.id
 }]]]></http:uri-params>
 		</http:request>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7fe51c45-1a82-40aa-8104-148126c3309e" type="HTTP:BAD_REQUEST">
+							<set-variable value="400" doc:name="httpStatus 400" doc:id="7c48a1e9-d055-4f2b-8e4d-4ff3db169f56" variableName="httpStatus"/>
+							<ee:transform doc:name="Transform Message" doc:id="27e69e61-d498-4496-b1b9-0de09a93c98d" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Staff doesn't exsists. Please provide a valid Staff ID"
+}
+]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
 			</otherwise>
 		</choice>
 		<error-handler ref="globalError_Handler" />
@@ -153,13 +174,31 @@ output application/json
 				<raise-error doc:name="Raise error" doc:id="cfc8124e-fb38-49f6-819a-7a22a1668e44" type="CLIENT:UNAUTHORIZED" description="Client Unauthorized to perform PUT / Update operation" />
 			</when>
 			<otherwise>
-				<http:request method="DELETE" doc:name="Request" doc:id="93d399c0-fd38-461a-94d2-54f7e59c18ae" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff">
+				<try doc:name="Try" doc:id="60c13bbb-8d9d-4d1e-b0ea-7a174444058c" >
+					<http:request method="DELETE" doc:name="Request" doc:id="93d399c0-fd38-461a-94d2-54f7e59c18ae" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff/{staffId}">
 				<http:uri-params><![CDATA[#[output application/java
 ---
 {
 	"staffId" : vars.id
 }]]]></http:uri-params>
 			</http:request>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c7909f46-e410-4550-ae74-1ce04c79a83f" type="HTTP:BAD_REQUEST" >
+							<set-variable value="400" doc:name="httpStatus 40" doc:id="3b2b8fd1-56a0-48de-8036-1d1b99b5bd1f" variableName="httpStatus" />
+							<ee:transform doc:name="Transform Message" doc:id="27aac709-bd77-44d2-8748-cd6dc1993489" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Staff doesn't exsists. Please provide a valid Staff ID"
+}
+]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
 			</otherwise>
 		</choice>
 		<error-handler ref="globalError_Handler" />
@@ -177,19 +216,18 @@ output application/json
 		<set-variable value="#[attributes.uriParams.'staffId']" doc:name="StaffID" doc:id="f4d02bd2-2d42-46ce-b966-91fa84e32334" variableName="id" />
 		<flow-ref doc:name="Fetch Role Information" doc:id="e71ac5ca-f5cc-4843-8a07-65298635dac3" name="fecth-role-information" />
 		<flow-ref doc:name="Validate Role" doc:id="ef865b8e-5787-42a9-8af8-debae8ea39de" name="validate-role" />
-		<http:request method="GET" doc:name="Request" doc:id="e3702526-9b27-40a9-836c-4926d66513d8" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff" >
+		<http:request method="GET" doc:name="Request" doc:id="e3702526-9b27-40a9-836c-4926d66513d8" config-ref="HTTP_Request_configuration_sys_api" path="/api/staff/{staffId}" >
 			<http:uri-params ><![CDATA[#[output application/java
 ---
 {
 	staffId : vars.id
 }]]]></http:uri-params>
-			<http:query-params ><![CDATA[#[vars.id]]]></http:query-params>
 		</http:request>
 		<error-handler ref="globalError_Handler" />
     </flow>
-    <flow name="post:\notification:application\json:hr-exp-api-config">
+    <!-- [STUDIO:"post:\notification:application\json:hr-exp-api-config"]<flow name="post:\notification:application\json:hr-exp-api-config">
 		<error-handler ref="globalError_Handler" />
-    </flow>
+    </flow> [STUDIO] -->
     <flow name="post:\staff:application\json:hr-exp-api-config">
         <ee:transform doc:name="Transform Message">
             <ee:message>

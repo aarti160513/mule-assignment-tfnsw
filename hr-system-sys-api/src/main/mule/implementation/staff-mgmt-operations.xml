@@ -49,7 +49,7 @@ WHERE id = :id]]></db:sql>
 		</db:select>
 		<choice doc:name="Choice" doc:id="13584dfb-198a-4d2d-9210-ef5155d3581e" >
 			<when expression="#[sizeOf(payload) == 0]">
-				<raise-error doc:name="Raise error" doc:id="257f662f-9052-4009-9ae5-92357fcbe373" type="STAFF:NOTFOUND" description="Staff doesn't exsists. Please provide a valid Stadff Id"/>
+				<raise-error doc:name="Raise error" doc:id="257f662f-9052-4009-9ae5-92357fcbe373" type="STAFF:NOTFOUND" description="Staff doesn't exsists. Please provide a valid Staff ID"/>
 			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Logger" doc:id="f6c3f9c0-855b-454e-9ecb-5884b5c952c5" message="#[payload]" />

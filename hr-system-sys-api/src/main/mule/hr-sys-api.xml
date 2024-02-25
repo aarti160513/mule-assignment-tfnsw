@@ -134,6 +134,7 @@ output text/plain
 "Staff member Sucessfully updated"]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<error-handler ref="globalError_Handler" />
     </flow>
     <flow name="delete:\staff\(staffId):hr-sys-api-config">
         <set-variable value="#[attributes.uriParams.'staffId']" doc:name="Staff ID" doc:id="bb01a63f-667a-4553-be47-e1c3a6dea08f" variableName="id" />
