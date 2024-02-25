@@ -1,0 +1,13 @@
+{
+  "main": "hr-sys-api.raml",
+  "name": "hr-sys-api",
+  "groupId": "5f38f098-66cc-44c4-b949-1a5e6b221f6d",
+  "assetId": "hr-sys-api",
+  "version": "1.0.2",
+  "classifier": "raml",
+  "tags": [],
+  "descriptorVersion": "1.0.0",
+  "organizationId": "5f38f098-66cc-44c4-b949-1a5e6b221f6d",
+  "apiVersion": "v1",
+  "originalFormatVersion": "1.0"
+}

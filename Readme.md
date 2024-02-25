@@ -4,7 +4,7 @@ This project implements a RESTful API for managing staff entities within the HR 
 
 ## Assmuptions
 
-1. HR System uses a tradaitional RDBMS i.e Postgres to store staff information
+1. HR System uses a tradaitional RDBMS i.e MySQL to store staff information
 2. All the the clietns intending to access the HR system API's should get themselves registerd first. It's a manual registartion where they would provided access keys and assigned a role within the HR System. The roles are READ, WRITE and ADMIN with the follwong permissions
    - READ - Allowed to fetch staff information
    - WRITE - Allowed to Create, Delete & Modify Staff information

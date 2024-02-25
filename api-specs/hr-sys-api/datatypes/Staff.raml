@@ -1,0 +1,13 @@
+#%RAML 1.0 DataType
+type: object
+displayName: Staff DataType
+description: Staff Information
+properties:
+  id? : integer
+  firstName?: string
+  lastName?: string
+  email?: string
+  role?: string
+  active?: boolean
+example: !include ../examples/StaffExample.raml
+  

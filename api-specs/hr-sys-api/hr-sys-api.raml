@@ -1,0 +1,116 @@
+#%RAML 1.0
+title: hr-sys-api
+description: API to intreact with HR System
+mediaType: application/json
+
+types:
+  Error: !include datatypes/Error.raml
+  Staff: !include datatypes/Staff.raml
+  StaffResp: !include datatypes/StaffResp.raml
+
+/staff:
+    get:
+      description: Retrieve a list of all staff members.
+      responses:
+        200:
+          body:
+            application/json:
+              type: StaffResp
+              example: !include ./examples/StaffsExample.raml
+        400:
+          description: Error in user request
+          body:
+            application/json:
+              type: Error
+              example: !include ./examples/ErrorExample.raml
+    post:
+        description: Create a new staff member.
+        body:
+          application/json:
+            type: Staff
+        responses:
+          201:
+            description: Staff member created successfully.
+            body: 
+              text/plain: 
+                example: |
+                  Staff member Sucessfully created. Id 1
+          400:
+            description: Error in user request
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
+          401:
+            description: Unauthorized access 
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
+
+    /{staffId}:
+      get:
+        description: Get details of an exisiting staff
+        responses:
+          200:
+            description: Staff member retrieved successfully.
+            body: 
+              application/json:
+                type: Staff
+          400:
+            description: Error in user request
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
+          401:
+            description: Unauthorized access 
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
+      delete:
+        description: Delete an exisiting staff member
+        responses:
+          204:
+            description: Offboarding sucessfull
+            body: 
+              text/plain: 
+                example: |
+                  Staff member Sucessfully offboarded
+          400:
+            description: Error in user request
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
+          401:
+            description: Unauthorized access 
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
+      put:
+        description: Update an exisiting staff member
+        body:
+          application/json:
+            type: Staff
+        responses:
+          201:
+            description: Sucessfull Update
+            body: 
+              text/plain: 
+                example: |
+                  Staff member Sucessfully updated
+          400:
+            description: Error in user request
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
+          401:
+            description: Unauthorized access 
+            body:
+              application/json:
+                type: Error
+                example: !include ./examples/ErrorExample.raml
