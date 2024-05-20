@@ -20,7 +20,7 @@ FROM staff
 WHERE id > :min AND id <= :max
 ORDER BY id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{ 
-	min: (vars.page - 1) * vars.pageSize,
+	min: ((vars.page - 1) * vars.pageSize) + 1,
 	max: vars.page * vars.pageSize
 	
 }]]]></db:input-parameters>

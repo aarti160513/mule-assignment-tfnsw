@@ -15,7 +15,7 @@
 					<munit-tools:with-attribute whereValue="caca8002-abde-439d-a8c8-f6eb9ac44f10" attributeName="doc:id" />
 				</munit-tools:with-attributes>
 				<munit-tools:then-return >
-					<munit-tools:payload value='#[%dw 2.0 &#10;output application/json&#10;---&#10;{&#10;    "total": 100,&#10;    "staffs": [&#10;        {&#10;            "FirstName": "Moishe",&#10;            "Role": " Sr. Manager",&#10;            "Active": false,&#10;            "Email": "mgillespie0@flickr.com",&#10;            "LastName": "Gillespie"&#10;        },&#10;        {&#10;            "FirstName": "Josy",&#10;            "Role": "Surveyor",&#10;            "Active": false,&#10;            "Email": "jannable1@edublogs.org",&#10;            "LastName": "Annable"&#10;        }]&#10;  }]' mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:payload value='#[%dw 2.0 &#10;output application/json&#10;---&#10;{&#10;    "total": 2,&#10;    "staffs": [&#10;        {&#10;            "FirstName": "Moishe",&#10;            "Role": " Sr. Manager",&#10;            "Active": false,&#10;            "Email": "mgillespie0@flickr.com",&#10;            "LastName": "Gillespie"&#10;        },&#10;        {&#10;            "FirstName": "Josy",&#10;            "Role": "Surveyor",&#10;            "Active": false,&#10;            "Email": "jannable1@edublogs.org",&#10;            "LastName": "Annable"&#10;        }]&#10;  }]' mediaType="application/json" encoding="UTF-8" />
 				</munit-tools:then-return>
 			</munit-tools:mock-when>
 			<munit-tools:mock-when doc:name="Mock DB REquest" doc:id="0456e522-c20f-4768-8cd5-1345c631a9b8" processor="db:query-single">

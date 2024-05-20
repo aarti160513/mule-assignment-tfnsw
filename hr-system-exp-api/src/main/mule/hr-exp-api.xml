@@ -241,14 +241,6 @@ output application/json
         <error-handler ref="globalError_Handler" />
     </flow>
     <flow name="post:\staff:application\json:hr-exp-api-config">
-        <ee:transform doc:name="Transform Message">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Staff member Sucessfully created" as String {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
         <set-variable value="#[%dw 2.0&#xA;output application/java&#xA;---&#xA;{&#xA; request: payload,&#xA;}]" doc:name="Original HTTP Details" doc:id="a54fdd66-326a-42f3-ad95-a43b1cf25b33" variableName="origRequest" />
         <flow-ref doc:name="Fetch Role Information" doc:id="6ed1176a-c7ea-4359-ac8e-f1118ca5cf6f" name="fecth-role-information" />
         <flow-ref doc:name="Validate Role" doc:id="04cbb43a-a775-4876-bd2b-ca09d437af2d" name="validate-role" />
